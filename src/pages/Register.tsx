@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,15 +12,61 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { 
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue
+} from '@/components/ui/select';
 import { Check, X } from 'lucide-react';
+
+const FALLBACK_COUNTRIES = [
+    { name: 'United States', code: 'US' },
+    { name: 'Canada', code: 'CA' },
+    { name: 'United Kingdom', code: 'GB' },
+    { name: 'Australia', code: 'AU' },
+    { name: 'Germany', code: 'DE' },
+    { name: 'Israel', code: 'IL' },
+];
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [city, setCity] = useState('');
+    const [country, setCountry] = useState('');
+
+    const [countriesList, setCountriesList] = useState<Array<{ name: string; code: string }>>([]);
 
     const navigate = useNavigate();
+
+    // Fetch countries on component mount
+    useEffect(() => {
+        const fetchCountries = async () => {
+            try {
+                // Using a public API to fetch country data
+                const res = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2');
+
+                if (!res.ok) throw new Error("API request failed");
+
+                const data = await res.json();
+
+                // Map and sort countries
+                const sorted = data.map((c:any) => ({
+                    name: c.name.common,
+                    code: c.cca2
+                })).sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+                setCountriesList(sorted);
+            } catch (error) {
+                console.warn("Countries API fetch failed, using fallback list.", error);
+                setCountriesList(FALLBACK_COUNTRIES);
+        }
+    };
+        fetchCountries();
+    }, []); // Empty dependency array ensures this runs only once on mount
 
     const passwordRules = [
         { label: "At least 8 characters", valid: password.length >= 8 },
@@ -34,7 +80,7 @@ const Register = () => {
 
         const isPasswordValid = passwordRules.every(rule => rule.valid);
 
-        if (!firstName || !lastName || !username || !password) {
+        if (!firstName || !lastName || !username || !password || !city || !country) {
             toast.warning("Missing fields", { description: "Please fill in all fields." });
             return;
         }
@@ -44,10 +90,11 @@ const Register = () => {
         }
 
         try {
+            // Send registration data to backend
             const response = await fetch('http://localhost:3000/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, username, password }),
+                body: JSON.stringify({ firstName, lastName, username, password, country, city }),
             });
 
             const data = await response.json();
@@ -73,7 +120,7 @@ const Register = () => {
 
     return (
         <div className="flex items-center justify-center h-screen bg-gray-100">
-            <Card className="w-[350px]">
+            <Card className="w-[450px]">
                 <CardHeader>
                     <CardTitle>Create an account</CardTitle>
                     <CardDescription>Enter your details below.</CardDescription>
@@ -111,6 +158,31 @@ const Register = () => {
                                 value={username}
                                 onChange={(e) => setUsername(e.target.value)}
                             />
+                        </div>
+
+                        {/* Country Field */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex=col space-y-2">
+                                <Label>Country</Label>
+                                {/*Use Shadcn Select Component NEEDS FIX IN ALIGNMENT*/}
+                                <Select onValueChange={setCountry}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select a country" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {countriesList.map((c) => (
+                                            <SelectItem key={c.code} value={c.name}>
+                                                {c.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            {/* City Field */}
+                            <div className="flex flex-col space-y-1.5">
+                                <Label htmlFor="city">City</Label>
+                                <Input id="city" placeholder="Tel Aviv" value={city} onChange={(e) => setCity(e.target.value)} />
+                            </div>
                         </div>
 
                         {/* Password Field */}
@@ -153,7 +225,7 @@ const Register = () => {
                             onClick={() => navigate('/login')}
                             >
                             Log in
-                            </span>
+                        </span>
                     </p>
                 </CardFooter>
             </Card>
