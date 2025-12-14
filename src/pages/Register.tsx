@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { Check, X } from 'lucide-react';
 
 const Register = () => {
     const [firstName, setFirstName] = useState('');
@@ -21,9 +22,24 @@ const Register = () => {
 
     const navigate = useNavigate();
 
+    const passwordRules = [
+        { label: "At least 8 characters", valid: password.length >= 8 },
+        { label: "At least one uppercase letter", valid: /[A-Z]/.test(password) },
+        { label: "At least one lowercase letter", valid: /[a-z]/.test(password) },
+        { label: "At least one number", valid: /[0-9]/.test(password) },
+        { label: "At least one special character", valid: /[!@#$%^&*(),.?":{}|<>]/.test(password) },
+    ];
+
     const handleRegister = async () => {
+
+        const isPasswordValid = passwordRules.every(rule => rule.valid);
+
         if (!firstName || !lastName || !username || !password) {
-            toast.warning("Please fill in all fields.");
+            toast.warning("Missing fields", { description: "Please fill in all fields." });
+            return;
+        }
+        if (!isPasswordValid) {
+            toast.warning("Weak password", { description: "Password must meet all the requirements!." });
             return;
         }
 
@@ -107,6 +123,24 @@ const Register = () => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
+                        </div>
+
+                        {/* Password Strength Indicators */}
+                        <div className="text-xs space-y-0.1 mt-1 p-2 bg-gray-100 round-md">
+                            <p className="font-semibold mb-2 text-gray-700">Password Requirements:</p>
+                            {passwordRules.map((rule, index) => (
+                                <div key={index} className="flex items-center gap-2">
+                                    {rule.valid ? (
+                                        <Check className="w-3 h-3 text-green-500" />
+                                    ) : (
+                                        <X className="w-3 h-3 text-gray-400" />
+                                    )}
+                                    <span className={rule.valid ? "text-green-600 line-through decoration-green-600/50" : "text-gray-500" }>
+                                        {rule.label}
+                                    </span>
+                                </div>
+                            ))}
+
                         </div>
                     </div>
                 </CardContent>
