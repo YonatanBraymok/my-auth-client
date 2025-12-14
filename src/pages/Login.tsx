@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,13 @@ const Login = () => {
     const navigate = useNavigate(); // Hook to navigate programmatically.
 
     const handleLogin = async () => {
+        if (!username || !password) {
+            toast.warning("Missing fields", {
+                description: "Please enter both username and password.",
+            });
+            return;
+        }
+
         try {
             const response = await fetch('http://localhost:3000/api/auth/login', {
                 method: 'POST',
@@ -30,14 +38,23 @@ const Login = () => {
             if (response.ok) {
                 // Save the token to localStorage, will be improved late.
                 localStorage.setItem('accessToken', data.accessToken);
-                alert('Login successful!');
-                navigate('/dashboard'); // Navigate to dashboard on successful login.
+                toast.success('Login successful!', {
+                    description: 'You have been logged in successfully.',
+                    duration: 3000, // Duration in milliseconds
+                });
+                // Navigate to the dashboard after successful login.
+                navigate('/dashboard', { replace: true
+                });
             } else {
-                alert(data.message || 'Login failed');
+                toast.error("Login failed", {
+                    description: data.message || 'Invalid username or password.',
+                });
             }
         } catch (error) {
             console.error('Error during login:', error);
-            alert('An error occurred during login. Please try again later.');
+            toast.error("Connection error", {
+                description: "Could not reach the server. Please try again later.",
+            });
         }
     };
 

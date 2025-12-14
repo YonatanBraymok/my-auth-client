@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast } from "sonner";
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,7 +23,7 @@ const Register = () => {
 
     const handleRegister = async () => {
         if (!firstName || !lastName || !username || !password) {
-            alert('Please fill in all fields.');
+            toast.warning("Please fill in all fields.");
             return;
         }
 
@@ -36,14 +37,21 @@ const Register = () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert('Registration successful!');
+                toast.success('Account created!', {
+                    description: 'You can now log in!.',
+                    duration: 3000,
+                });
                 navigate('/login');
             } else {
-                alert(data.message || 'Registration failed.');
+                toast.error("Registration failed", {
+                    description: data.message || 'Could not register with provided details.',
+                });
             }
         } catch (error) {
             console.error('Error during registration:', error);
-            alert('Connection error.');
+            toast.error("Connection error", {
+                description: "Could not reach the server. Please try again later.",
+            });
         }
     };
 
