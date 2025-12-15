@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
     Card,
     CardContent,
@@ -33,7 +34,7 @@ const FALLBACK_COUNTRIES = [
 const Register = () => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [city, setCity] = useState('');
     const [country, setCountry] = useState('');
@@ -80,7 +81,7 @@ const Register = () => {
 
         const isPasswordValid = passwordRules.every(rule => rule.valid);
 
-        if (!firstName || !lastName || !username || !password || !city || !country) {
+        if (!firstName || !lastName || !email || !password || !city || !country) {
             toast.warning("Missing fields", { description: "Please fill in all fields." });
             return;
         }
@@ -94,14 +95,14 @@ const Register = () => {
             const response = await fetch('http://localhost:3000/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firstName, lastName, username, password, country, city }),
+                body: JSON.stringify({ firstName, lastName, email, password, country, city }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
                 toast.success('Account created!', {
-                    description: 'You can now log in!.',
+                    description: 'Please verify your email before logging in.',
                     duration: 3000,
                 });
                 navigate('/login');
@@ -149,32 +150,35 @@ const Register = () => {
                             />
                         </div>
 
-                        {/* Username Field */}
+                        {/* Email Field */}
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="username">Username</Label>
+                            <Label htmlFor="email">Email</Label>
                             <Input
-                                id="username"
-                                placeholder="johndoe"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                id="email"
+                                type="email"
+                                placeholder="johndoe@example.com"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
 
                         {/* Country Field */}
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="flex flex=col space-y-2">
+                            <div className="flex flex-col space-y-2">
                                 <Label>Country</Label>
-                                {/*Use Shadcn Select Component NEEDS FIX IN ALIGNMENT*/}
+                                {/*Use Shadcn Select Component*/}
                                 <Select onValueChange={setCountry}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select a country" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {countriesList.map((c) => (
-                                            <SelectItem key={c.code} value={c.name}>
-                                                {c.name}
-                                            </SelectItem>
-                                        ))}
+                                        <ScrollArea className="h-[200px]">
+                                            {countriesList.map((c) => (
+                                                <SelectItem key={c.code} value={c.name}>
+                                                    {c.name}
+                                                </SelectItem>
+                                            ))}
+                                        </ScrollArea>
                                     </SelectContent>
                                 </Select>
                             </div>

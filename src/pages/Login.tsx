@@ -14,14 +14,14 @@ import {
 } from '@/components/ui/card';
 
 const Login = () => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate(); // Hook to navigate programmatically.
 
     const handleLogin = async () => {
-        if (!username || !password) {
+        if (!email || !password) {
             toast.warning("Missing fields", {
-                description: "Please enter both username and password.",
+                description: "Please enter both email and password.",
             });
             return;
         }
@@ -30,7 +30,7 @@ const Login = () => {
             const response = await fetch('http://localhost:3000/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+                body: JSON.stringify({ email, password }),
             });
 
             const data = await response.json();
@@ -68,12 +68,13 @@ const Login = () => {
                 <CardContent>
                     <div className="grid w-full items-center gap-4">
                         <div className="flex flex-col space-y-1.5">
-                            <Label htmlFor="username">Username</Label>
+                            <Label htmlFor="username">Email</Label>
                             <Input
-                                id="username"
-                                placeholder="Enter your username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                             />
                         </div>
                         <div className="flex flex-col space-y-1.5">
