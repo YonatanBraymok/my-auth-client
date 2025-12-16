@@ -94,12 +94,16 @@ const Login = () => {
                     <p className="text-sm text-gray-500 text-center">
                         Dont have an account?{' '}
                         <span
-                            className="text-blue-500 cursor-pointer hove:underline"
+                            className="text-blue-500 cursor-pointer hover:underline"
                             onClick={() => navigate('/register')}
                             >
                                 Sign up
                             </span>
                     </p>
+                    <span className="text-xs text-blue-500 cursor-pointer hover:underline"
+                    onClick={() => navigate('/forgot-password')}>
+                        Forgot your password?
+                    </span>
                 </CardFooter>
             </Card>
         </div>
