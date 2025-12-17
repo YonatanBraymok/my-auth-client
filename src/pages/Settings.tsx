@@ -6,76 +6,139 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Check, X, Lock } from 'lucide-react';
 
 const Settings = () => {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  
+  // --- Profile State ---
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [country, setCountry] = useState('');
+  const [city, setCity] = useState('');
+  const [email, setEmail] = useState('');
 
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
-    const [country, setCountry] = useState('');
-    const [city, setCity] = useState('');
-    const [email, setEmail] = useState('');
+  // --- Password State ---
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                navigate('/login');
-                return;
-            }
+  const passwordRules = [
+        { label: "At least 8 characters", valid: newPassword.length >= 8 },
+        { label: "At least one uppercase letter", valid: /[A-Z]/.test(newPassword) },
+        { label: "At least one lowercase letter", valid: /[a-z]/.test(newPassword) },
+        { label: "At least one number", valid: /[0-9]/.test(newPassword) },
+        { label: "At least one special character", valid: /[!@#$%^&*(),.?":{}|<>]/.test(newPassword) },
+    ];
 
-            try {
-                const response = await fetch('http://localhost:3000/api/auth/me', {
-                    headers: { 'Authorization': `Bearer ${ token }` }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setFirstName(data.firstName);
-                    setLastName(data.lastName);
-                    setCountry(data.country);
-                    setCity(data.city);
-                    setEmail(data.email);
-                } else {
-                    toast.error("Server error");
-                }
-            } catch (error) {
-                toast.error("Server error");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, [navigate]);
-
-    const handleUpdateProfile = async () => {
+  useEffect(() => {
+    const fetchProfile = async () => {
         const token = localStorage.getItem('accessToken');
-        try {
-            const response = await fetch('http://localhost:3000/api/auth/profile', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ firstName, lastName, country, city }),
-            });
+        if (!token) {
+            navigate('/login');
+            return;
+        }
 
+        try {
+            const response = await fetch('http://localhost:3000/api/auth/me', {
+                headers: { 
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            });
+            
             if (response.ok) {
-                toast.success("Profile update successfully!");
+                const data = await response.json();
+                setFirstName(data.firstName);
+                setLastName(data.lastName);
+                setCountry(data.country);
+                setCity(data.city);
+                setEmail(data.email);
             } else {
-                toast.error("Update failed");
+                toast.error("Failed to load profile");
             }
         } catch (error) {
+            console.error(error);
             toast.error("Server error");
+        } finally {
+            setLoading(false);
         }
     };
 
-    if (loading) return <div className="p-10">Loading...</div>;
+    fetchProfile();
+  }, [navigate]);
 
-    return (
+  const handleUpdateProfile = async () => {
+    const token = localStorage.getItem('accessToken');
+    try {
+        const response = await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ firstName, lastName, country, city }),
+        });
+
+        if (response.ok) {
+            toast.success("Profile updated successfully!");
+        } else {
+            toast.error("Update failed");
+        }
+    } catch (error) {
+        toast.error("Server error");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    const token = localStorage.getItem('accessToken');
+
+    if (!currentPassword || !newPassword || !confirmNewPassword) {
+        toast.warning("Please fill all password fields");
+        return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+        toast.warning("New passwords do not match");
+        return;
+    }
+
+    const isPasswordValid = passwordRules.every(rule => rule.valid);
+    if (!isPasswordValid) {
+        toast.warning("Weak password");
+        return;
+    }
+
+    try {
+        const response = await fetch('http://localhost:3000/api/auth/change-password', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ currentPassword, newPassword }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            toast.success("Password changed!", { description: "Please login with your new password" });
+          
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmNewPassword('');
+        } else {
+            toast.error("Change failed", { description: data.message });
+        }
+    } catch (error) {
+        toast.error("Server error");
+    }
+  };
+
+  if (loading) return <div className="p-10">Loading...</div>;
+
+  return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         
@@ -93,6 +156,7 @@ const Settings = () => {
                 <TabsTrigger value="danger" className="text-red-500">Danger Zone</TabsTrigger>
             </TabsList>
 
+            {/* Account Tab */}
             <TabsContent value="account">
                 <Card>
                     <CardHeader>
@@ -125,7 +189,6 @@ const Settings = () => {
                         <div className="space-y-2">
                             <Label>Email</Label>
                             <Input value={email} disabled className="bg-gray-100" />
-                            <p className="text-xs text-gray-500">Email cannot be changed.</p>
                         </div>
 
                         <Button onClick={handleUpdateProfile} className="mt-4">
@@ -135,11 +198,59 @@ const Settings = () => {
                 </Card>
             </TabsContent>
 
+            {/* Password Tab */}
             <TabsContent value="password">
-                <Card><CardContent className="pt-6">Coming soon: Change Password</CardContent></Card>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Change Password</CardTitle>
+                        <CardDescription>Ensure your account is using a long, random password to stay secure.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4 max-w-lg">
+                        
+                        <div className="space-y-2">
+                            <Label>Current Password</Label>
+                            <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>New Password</Label>
+                            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Confirm New Password</Label>
+                            <Input type="password" value={confirmNewPassword} onChange={(e) => setConfirmNewPassword(e.target.value)} />
+                        </div>
+
+                        {/* Password Rules */}
+                        <div className="text-xs space-y-0.5 p-3 bg-gray-50 rounded-md border border-gray-100">
+                            <p className="font-medium mb-1 text-gray-500">New Password Requirements:</p>
+                            {passwordRules.map((rule, index) => (
+                                <div key={index} className="flex items-center gap-1.5">
+                                    {rule.valid ? <Check className="w-3 h-3 text-green-500" /> : <X className="w-3 h-3 text-gray-300" />}
+                                    <span className={rule.valid ? "text-green-600" : "text-gray-400"}>{rule.label}</span>
+                                </div>
+                            ))}
+                        </div>
+
+                        <Button onClick={handleChangePassword} className="mt-4">
+                            <Lock className="w-4 h-4 mr-2" /> Update Password
+                        </Button>
+                    </CardContent>
+                </Card>
             </TabsContent>
+
+            {/* Danger Zone */}
             <TabsContent value="danger">
-                <Card><CardContent className="pt-6">Coming soon: Delete Account</CardContent></Card>
+                <Card className="border-red-100">
+                     <CardHeader>
+                        <CardTitle className="text-red-600">Delete Account</CardTitle>
+                        <CardDescription>Permanently remove your account and all of its data. This action cannot be undone.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                         <Button variant="destructive">Delete Account</Button>
+                    </CardContent>
+                </Card>
             </TabsContent>
         </Tabs>
       </div>
