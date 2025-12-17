@@ -66,7 +66,7 @@ const Dashboard = () => {
                 <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
                 <p className="text-gray-500 mt-2">Welcome back to your overview.</p>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
+            <Button onClick={() => navigate('/settings')} className="bg-blue-600 hover:bg-blue-700">
                 <Settings className="mr-2 h-4 w-4" /> Settings
             </Button>
         </div>
