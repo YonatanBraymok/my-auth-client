@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Save, Check, X, Lock } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -136,6 +140,29 @@ const Settings = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    const token = localStorage.getItem('accessToken');
+    try {
+        const response = await fetch('http://localhost:3000/api/auth/profile', {
+            method: 'DELETE',
+            headers: { 
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        if (response.ok) {
+            toast.success("Account deleted. We are sorry to see you go.");
+
+            localStorage.removeItem('accessToken');
+            navigate('/login');
+        } else {
+            toast.error("Failed to delete account");
+        }
+    } catch (error) {
+        toast.error("Server error");
+    }
+  };
+
   if (loading) return <div className="p-10">Loading...</div>;
 
   return (
@@ -240,15 +267,37 @@ const Settings = () => {
                 </Card>
             </TabsContent>
 
-            {/* Danger Zone */}
+            {/* Danger Zone - With Confirmation Dialog */}
             <TabsContent value="danger">
-                <Card className="border-red-100">
+                <Card className="border-red-100 bg-red-50/10">
                      <CardHeader>
                         <CardTitle className="text-red-600">Delete Account</CardTitle>
-                        <CardDescription>Permanently remove your account and all of its data. This action cannot be undone.</CardDescription>
+                        <CardDescription>
+                            Permanently remove your account and all of its data. This action cannot be undone.
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                         <Button variant="destructive">Delete Account</Button>
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button variant="destructive">Delete Account</Button>
+                            </AlertDialogTrigger>
+                            
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete your account
+                                        and remove your data from our servers.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                                        Yes, delete my account
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </CardContent>
                 </Card>
             </TabsContent>
