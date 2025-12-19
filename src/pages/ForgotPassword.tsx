@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-//import API_URL from '../config';
+import API_URL from '../config';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -21,11 +21,15 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      /*const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
-      });*/
+      });
+
+      if (!response.ok) {
+          throw new Error("Failed to send email");
+      }
       
       toast.success("If an account exists, a reset email has been sent.", {
           duration: 5000,
