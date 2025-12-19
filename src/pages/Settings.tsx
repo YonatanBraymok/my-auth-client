@@ -11,6 +11,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription,
   AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import API_URL from '../config';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -45,7 +46,7 @@ const Settings = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3000/api/auth/me', {
+            const response = await fetch(`${API_URL}/api/auth/me`, {
                 headers: { 
                     'Authorization': `Bearer ${token}`,
                     'Cache-Control': 'no-cache'
@@ -76,7 +77,7 @@ const Settings = () => {
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-        const response = await fetch('http://localhost:3000/api/auth/profile', {
+        const response = await fetch(`${API_URL}/api/auth/profile`, {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ const Settings = () => {
     }
 
     try {
-        const response = await fetch('http://localhost:3000/api/auth/change-password', {
+        const response = await fetch(`${API_URL}/api/auth/change-password`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -143,7 +144,7 @@ const Settings = () => {
   const handleDeleteAccount = async () => {
     const token = localStorage.getItem('accessToken');
     try {
-        const response = await fetch('http://localhost:3000/api/auth/profile', {
+        const response = await fetch(`${API_URL}/api/auth/profile`, {
             method: 'DELETE',
             headers: { 
                 'Authorization': `Bearer ${token}`

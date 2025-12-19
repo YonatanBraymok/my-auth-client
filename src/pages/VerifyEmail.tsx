@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import API_URL from "../config";
 
 const VerifyEmail = () => {
     const [searchParams] = useSearchParams();
@@ -30,7 +31,7 @@ const VerifyEmail = () => {
 
         const verifyToken = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/auth/verify', {
+                const response = await fetch(`${API_URL}/api/auth/verify`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token }),

@@ -21,6 +21,7 @@ import {
     SelectValue
 } from '@/components/ui/select';
 import { Check, X } from 'lucide-react';
+import API_URL from '../config';
 
 const FALLBACK_COUNTRIES = [
     { name: 'United States', code: 'US' },
@@ -92,7 +93,7 @@ const Register = () => {
 
         try {
             // Send registration data to backend
-            const response = await fetch('http://localhost:3000/api/auth/register', {
+            const response = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firstName, lastName, email, password, country, city }),
