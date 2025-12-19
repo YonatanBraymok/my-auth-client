@@ -1,32 +1,66 @@
-
 /* ========================== *
- * MEANINGLESS DASHBOARD PAGE
+ * CLEAN & SIMPLE DASHBOARD
  * ========================== */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
-  Activity, 
-  CreditCard, 
-  DollarSign, 
-  Users, 
   LogOut, 
   User as UserIcon,
   Settings,
-  Bell
+  MapPin,
+  Mail,
+  CheckCircle2,
+  AlertCircle,
+  Calendar
 } from 'lucide-react';
+import API_URL from '../config';
+
+interface UserProfile {
+    firstName: string;
+    lastName: string;
+    email: string;
+    city: string;
+    country: string;
+    isVerified: boolean;
+    createdAt?: string;
+}
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  //const [user, setUser] = useState({ name: 'User', email: '' });
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (!token) {
-        navigate('/login');
-    }
+    const fetchData = async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/auth/me`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setUser(data);
+            } else {
+                localStorage.removeItem('accessToken');
+                navigate('/login');
+            }
+        } catch (error) {
+            console.error("Failed to fetch user");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchData();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -34,118 +68,99 @@ const Dashboard = () => {
     navigate('/login');
   };
 
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>;
+
   return (
     <div className="min-h-screen bg-gray-50/50">
       {/* Navbar */}
-      <nav className="border-b bg-white px-6 py-3 flex justify-between items-center sticky top-0 z-10">
-        <div className="flex items-center gap-2 font-bold text-xl text-blue-600">
-            <div className="w-8 h-8 bg-blue-600 text-white rounded-lg flex items-center justify-center">A</div>
+      <nav className="bg-white border-b px-6 py-3 flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center gap-2 font-bold text-xl text-indigo-600">
+            <div className="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center">A</div>
             AuthApp
         </div>
-        <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" className="text-gray-500">
-                <Bell className="w-5 h-5" />
-            </Button>
-            <div className="flex items-center gap-3 pl-4 border-l">
-                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <UserIcon className="w-5 h-5 text-gray-500" />
-                </div>
-                <Button variant="outline" size="sm" onClick={handleLogout} className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50">
-                    <LogOut className="w-4 h-4" /> Logout
-                </Button>
-            </div>
-        </div>
+        <Button variant="ghost" size="sm" onClick={handleLogout} className="text-gray-500 hover:text-red-600 hover:bg-red-50 gap-2">
+            <LogOut className="w-4 h-4" /> Logout
+        </Button>
       </nav>
 
       {/* Main Content */}
-      <main className="p-8 max-w-7xl mx-auto space-y-8">
+      <main className="p-4 sm:p-8 max-w-4xl mx-auto space-y-6">
         
-        {/* Welcome Section */}
-        <div className="flex justify-between items-end">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-gray-900">Dashboard</h1>
-                <p className="text-gray-500 mt-2">Welcome back to your overview.</p>
+                <h1 className="text-2xl font-bold text-gray-900">
+                    Hello, {user?.firstName || 'User'}
+                </h1>
+                <p className="text-gray-500">Here's what we know about you.</p>
             </div>
-            <Button onClick={() => navigate('/settings')} className="bg-blue-600 hover:bg-blue-700">
-                <Settings className="mr-2 h-4 w-4" /> Settings
+            <Button onClick={() => navigate('/settings')} variant="outline" className="gap-2">
+                <Settings className="w-4 h-4" /> Settings
             </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-xs text-muted-foreground">+20.1% from last month</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Subscriptions</CardTitle>
-                    <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-xs text-muted-foreground">+180.1% from last month</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                    <CreditCard className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">+19% from last month</p>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-                    <Activity className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">+573</div>
-                    <p className="text-xs text-muted-foreground">+201 since last hour</p>
-                </CardContent>
-            </Card>
-        </div>
-
-        {/* Main Area Placeholder */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4">
+        <div className="grid gap-6 md:grid-cols-3">
+            
+            {/* Main Profile Card */}
+            <Card className="md:col-span-2 shadow-sm">
                 <CardHeader>
-                    <CardTitle>Overview</CardTitle>
+                    <CardTitle className="text-lg flex items-center gap-2">
+                        <UserIcon className="w-5 h-5 text-gray-400" /> Personal Information
+                    </CardTitle>
                 </CardHeader>
-                <CardContent className="pl-2">
-                    <div className="h-[200px] flex items-center justify-center text-gray-400 bg-gray-50 rounded-md border border-dashed">
-                        Chart Placeholder
+                <CardContent className="space-y-6">
+                    <div className="grid sm:grid-cols-2 gap-6">
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Full Name</label>
+                            <div className="font-medium text-gray-900">
+                                {user?.firstName} {user?.lastName}
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Email</label>
+                            <div className="flex items-center gap-2 text-gray-900">
+                                <Mail className="w-4 h-4 text-gray-400" />
+                                {user?.email}
+                            </div>
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium text-gray-500 uppercase">Location</label>
+                            <div className="flex items-center gap-2 text-gray-900">
+                                <MapPin className="w-4 h-4 text-gray-400" />
+                                {user?.city && user?.country ? `${user.city}, ${user.country}` : <span className="text-gray-400 italic">Not set</span>}
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
-            <Card className="col-span-3">
+
+            {/* Status Card */}
+            <Card className="shadow-sm">
                 <CardHeader>
-                    <CardTitle>Recent Sales</CardTitle>
-                    <p className="text-sm text-gray-500">You made 265 sales this month.</p>
+                    <CardTitle className="text-lg">Account Status</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="space-y-8">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="flex items-center">
-                                <div className="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                                    0{i}
-                                </div>
-                                <div className="ml-4 space-y-1">
-                                    <p className="text-sm font-medium leading-none">Olivia Martin</p>
-                                    <p className="text-sm text-muted-foreground">olivia.martin@email.com</p>
-                                </div>
-                                <div className="ml-auto font-medium">+$1,999.00</div>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <div className="text-sm text-gray-500">Verification</div>
+                        {user?.isVerified ? (
+                            <div className="flex items-center gap-2 text-green-700 bg-green-50 p-2 rounded-md border border-green-100">
+                                <CheckCircle2 className="w-5 h-5" />
+                                <span className="font-medium">Verified Account</span>
                             </div>
-                        ))}
+                        ) : (
+                            <div className="flex items-center gap-2 text-yellow-700 bg-yellow-50 p-2 rounded-md border border-yellow-100">
+                                <AlertCircle className="w-5 h-5" />
+                                <span className="font-medium">Unverified</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t">
+                        <div className="text-sm text-gray-500">Member Since</div>
+                        <div className="flex items-center gap-2 text-gray-700">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span>{new Date().getFullYear()}</span>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
