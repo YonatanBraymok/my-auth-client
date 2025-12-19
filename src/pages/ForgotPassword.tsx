@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
-import API_URL from '../config';
+//import API_URL from '../config';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
