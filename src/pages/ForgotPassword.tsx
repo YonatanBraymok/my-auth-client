@@ -21,11 +21,11 @@ const ForgotPassword = () => {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
+      /*const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
-      });
+      });*/
       
       toast.success("If an account exists, a reset email has been sent.", {
           duration: 5000,

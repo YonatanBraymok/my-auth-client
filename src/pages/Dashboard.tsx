@@ -3,7 +3,7 @@
  * MEANINGLESS DASHBOARD PAGE
  * ========================== */
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import {
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState({ name: 'User', email: '' });
+  //const [user, setUser] = useState({ name: 'User', email: '' });
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
