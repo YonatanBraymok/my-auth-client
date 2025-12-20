@@ -63,7 +63,21 @@ const Dashboard = () => {
     fetchData();
   }, [navigate]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const token = localStorage.getItem('accessToken');
+
+    try {
+        await fetch(`${API_URL}/api/auth/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+    } catch (error) {
+        console.error("Logout failed on server", error);
+    }
+
     localStorage.removeItem('accessToken');
     navigate('/login');
   };
